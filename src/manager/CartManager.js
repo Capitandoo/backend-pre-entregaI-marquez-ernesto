@@ -6,12 +6,6 @@ export default class CartManager {
     this.path = pathCarritos;
   }
 
-  // async readCarts () {
-  //   const productsData = fs.readFile(this.path, "utf-8");
-  //   const ProductsJson = JSON.parse (productsData);
-  //   return ProductsJson;
-  // }
-
   async getCarts () {
     try {
         if (!fs.existsSync (this.path)){
@@ -28,10 +22,7 @@ export default class CartManager {
     try{
         const products = await this.getCarts ();
         const id = products.length > 0 ? products[products.length - 1].id : 0;
-        const newProduct = { id: id + 1, ...product, };
-        if (products.some (p => p.code == product.code)) {
-            return console.log ("El codigo debe ser unico");
-        }
+        const newProduct = { id: id + 1, products: [], };
         products.push(newProduct);
         await fs.promises.writeFile (this.path, JSON.stringify (products));
         return newProduct;
@@ -53,15 +44,15 @@ export default class CartManager {
     }
   }
 
-  async saveProductToCart (idCart, idProd) {
+  async saveProductToCart (cid, pid) {
     try {
-      const cart = await this.getCartById (idCart);
+      const cart = await this.getCartById (cid);
       if (cart) {
-        const prodExiste = cart.products.find (p => p.id === idProd);
+        const prodExiste = cart.products.find (p => p.id === pid);
         if (prodExiste){
           prodExiste.quantity +1;
         } else {
-          cart.products.push (idProd);
+          cart.products.push (pid);
         }
       } else {
         console.log (error);

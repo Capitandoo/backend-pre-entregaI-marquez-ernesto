@@ -9,19 +9,19 @@ router.post("/", async (req, res) => {
     const cart = await cartManager.getCarts ();
       res.send(cart);
   } catch (error) {
-    res.status(500).send("Error Interno");o
+    res.status(500).send("Error Interno");
   }
 });
 
 router.get("/:cid", async (req, res) => {
   try {
     const cartId = req.params.cid;
-    const cart = await cartManager.getCartById ();
+    const cart = await cartManager.getCarts ();
     const productCart = cart.find((product) => product.id === parseInt(cartId));
     if (productCart) {
       res.send(cart);
     } else {
-      res.status(404).send("Carrito no Encontrado");
+      res.status(404).send("El Carrito no fue Encontrado");
     }
   } catch (error) {
     res.status(500).send("Error Interno");
@@ -33,9 +33,7 @@ router.post("/:cid/product/:idProd", async (req, res) => {
     const { pid } = req.params;
     const { cid } = req.params;
     const cart = await cartManager.getCarts({ cid });
-    const productIndex = cart.product.findIndex(
-      (product) => product.id === { pid }
-    );
+    const productIndex = cart.product.findIndex((product) => product.id === { pid });
     if (productIndex === -1) {
       cart.products.push({ id: { pid }, quantity: 1 });
     } else {
