@@ -1,8 +1,9 @@
 import fs from 'fs';
+import { pathProducts } from '../path.js';
 
 export default class ProductManager {
     constructor () {
-        this.path = '../data/productos.json';
+        this.path = pathProducts;
     }
 
     async getProducts () {

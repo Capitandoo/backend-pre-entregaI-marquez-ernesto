@@ -4,44 +4,49 @@ import CartManager from "../manager/CartManager.js";
 const router = Router();
 const cartManager = new CartManager();
 
-async function readCarts() {
-  const productsData = await fs.readFile('../data/carrito.json');
-  return JSON.parse(productsData);
-}
-
-router.get('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit);
-    const products = await readCarts ();
-    if (!limit) {
-      res.send(products);
-    } else {
-      res.send(products.slice(0, limit));
-    }
+    const cart = await cartManager.getCarts ();
+      res.send(cart);
   } catch (error) {
-    res.status(500).send('Error Interno');
+    res.status(500).send("Error Interno");o
   }
 });
 
-router.get('/:idCart', async (req, res) => {
+router.get("/:cid", async (req, res) => {
   try {
-    const id = req.params.idCart;
-    const products = await readCarts();
-    const product = products.find((product) => product.id === parseInt (id));
-    if (product) {
-      res.send(product);
+    const cartId = req.params.cid;
+    const cart = await cartManager.getCartById ();
+    const productCart = cart.find((product) => product.id === parseInt(cartId));
+    if (productCart) {
+      res.send(cart);
     } else {
-      res.status(404).send('Producto no Encontrado');
+      res.status(404).send("Carrito no Encontrado");
     }
   } catch (error) {
-    res.status(500).send('Error Interno');
+    res.status(500).send("Error Interno");
   }
 });
 
-router.post("/:idCart/product/:idProd", async (req, res) => {
-  const { idProd } = req.params;
-  const { idCart } = req.params;
-  await saveProductToCart(idCart, idProd);
+router.post("/:cid/product/:idProd", async (req, res) => {
+  try {
+    const { pid } = req.params;
+    const { cid } = req.params;
+    const cart = await cartManager.getCarts({ cid });
+    const productIndex = cart.product.findIndex(
+      (product) => product.id === { pid }
+    );
+    if (productIndex === -1) {
+      cart.products.push({ id: { pid }, quantity: 1 });
+    } else {
+      cart.products[productIndex].quantity++;
+    }
+    await saveProductToCart(cid, pid);
+    res.json(cart);
+  } catch (error) {
+    console.log (error);
+    res.status (500).json ({error: "Error al agregar el producto al carrito"});
+  }
 });
 
 export default router;

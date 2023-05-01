@@ -1,19 +1,14 @@
 import { Router } from "express";
-import fs from 'fs/promises';
 import ProductManager from '../manager/ProductManager.js';
 
 const router = Router ();
 const productManager = new ProductManager ();
 
-async function readProducts() {
-    const productsData = await fs.readFile('../data/productos.json');
-    return JSON.parse(productsData);
-  }
 
 router.get('/', async (req, res) => {
     try {
       const limit = parseInt(req.query.limit);
-      const products = await readProducts();
+      const products = await productManager.getProducts ();
       if (!limit) {
         res.send(products);
       } else {
@@ -27,7 +22,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
-    const products = await readProducts();
+    const products = await productManager.getProducts ();
     const product = products.find((product) => product.id === parseInt (id));
     if (product) {
       res.send(product);
@@ -53,9 +48,9 @@ router.put('/:id', async(req, res) => {
   try {
       const product = req.body;
       const { id } = req.params;
-      const productFile = await productManager.getProductById(Number(id));
+      const productFile = await productManager.getProductById (Number(id));
       if(productFile){
-          await productManager.updateProduct(product, Number(id));
+          await productManager.updateProduct (product, Number(id));
           res.send(`Producto Actualizado!`);
       } else {
           res.status(404).send('Producto No Encontrado')
@@ -68,7 +63,7 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res)=>{
   try {
       const { id } = req.params;
-      const products = await readProducts ();
+      const products = await productManager.getProducts ();
       if(products.length > 0){
           await productManager.deleteProduct(Number(id));
           res.send(`El Producto Con El id: ${id} Fue Borrado`);

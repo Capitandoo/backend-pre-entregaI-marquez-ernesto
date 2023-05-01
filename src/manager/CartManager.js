@@ -1,9 +1,16 @@
 import fs from 'fs';
+import { pathCarritos } from '../path.js';
 
 export default class CartManager {
   constructor() {
-    this.path = '../data/carrito.json'
+    this.path = pathCarritos;
   }
+
+  // async readCarts () {
+  //   const productsData = fs.readFile(this.path, "utf-8");
+  //   const ProductsJson = JSON.parse (productsData);
+  //   return ProductsJson;
+  // }
 
   async getCarts () {
     try {

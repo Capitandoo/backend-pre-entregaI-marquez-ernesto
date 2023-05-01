@@ -14,7 +14,7 @@ app.use ('/products', productsRouter);
 app.use ('/cart', cartRouter);
 
 app.listen(port, () => {
-  console.log('Server iniciado en el puerto 8080');
+  console.log(`Server iniciado en el puerto ${port}`);
 });
 
 
