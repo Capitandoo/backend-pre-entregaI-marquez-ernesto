@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const products = await productManager.getProducts ();
-    const product = products.find((product) => product.id === parseInt (id));
+    const product = products.find ((product) => product.id === parseInt (id));
     if (product) {
       res.send(product);
     } else {

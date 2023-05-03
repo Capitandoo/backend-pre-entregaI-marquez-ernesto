@@ -1,5 +1,8 @@
 import fs from 'fs';
 import { pathCarritos } from '../path.js';
+import ProductManager from './ProductManager.js';
+
+const consultaProducto = new ProductManager ();
 
 export default class CartManager {
   constructor() {
@@ -22,7 +25,7 @@ export default class CartManager {
     try{
         const products = await this.getCarts ();
         const id = products.length > 0 ? products[products.length - 1].id : 0;
-        const newProduct = { id: id + 1, products: [], };
+        const newProduct = { id: id + 1, products: [] };
         products.push(newProduct);
         await fs.promises.writeFile (this.path, JSON.stringify (products));
         return newProduct;
@@ -31,12 +34,12 @@ export default class CartManager {
     }
 }
   
-  async getCartById(id) {
+  async getCartById(cid) {
     try {
-      const products = await this.getCarts();
-      const data = products.find((product) => product.id === id);
+      const cartById = await this.getCarts();
+      const data = cartById.find ((cart) => cart.id === cid);
       if (!data) {
-        console.log(`El producto con el id ${id} no fue encontrado`);
+        console.log(`El carrito con el id ${cid} no fue encontrado`);
       }
       return data;
     } catch (error) {
@@ -44,21 +47,33 @@ export default class CartManager {
     }
   }
 
-  async saveProductToCart (cid, pid) {
+  async addProductToCart (cid, pid) {
     try {
-      const cart = await this.getCartById (cid);
-      if (cart) {
-        const prodExiste = cart.products.find (p => p.id === pid);
-        if (prodExiste){
-          prodExiste.quantity +1;
-        } else {
-          cart.products.push (pid);
-        }
-      } else {
-        console.log (error);
+      const cart = await this.getCartById (parseInt(cid));
+      if (!cart) return "El carrito no existe";
+      const productById = await consultaProducto.getProductById (parseInt(pid));
+      if (!productById) return "Producto no encontrado";
+      const cartsAll = await this.getCarts ();
+      const cartFilter = cartsAll.filter (cart => cart.id != cid);
+      const productBuscado = cart.products.some ((prod) => prod.product === parseInt(pid))
+      if (productBuscado) {
+        const productInCart = cart.products.find (prod => prod.product === parseInt(pid));
+        productInCart.quantity++;
+        const cartsConcat = [cart, ...cartFilter];
+        await this.saveCarts (cartsConcat);
+        return "Producto sumado al carrito";
       }
+      cart.products.push ({product: productById.id, quantity: 1});
+      const cartsConcat = [cart, ...cartFilter];
+      await this.saveCarts (cartsConcat);
+      return "Producto agregado al Carrito";
     } catch (error) {
       console.log(error);
     }
   };
+
+  async saveCarts (cart) {
+    await fs.promises.writeFile (this.path, JSON.stringify (cart));
+  };
+
 }
