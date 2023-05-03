@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { uploader } from "../middlewares/multer.js";
+import { productValidator } from "../middlewares/productValidator.js";
 import ProductManager from '../manager/ProductManager.js';
 
 const router = Router ();
@@ -34,9 +36,20 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res)=>{
+router.post('/', productValidator, async (req, res)=>{
   try {
       const product = req.body;
+      const newProduct = await productManager.addProduct (product);
+      res.json(newProduct);
+  } catch (error) {
+      res.status(404).json({ message: error.message });
+  }
+});
+
+router.post('/images', uploader.single ("photo"), async (req, res)=>{
+  try {
+      const product = req.body;
+      product.photo = req.file.path;
       const newProduct = await productManager.addProduct (product);
       res.json(newProduct);
   } catch (error) {
@@ -50,7 +63,7 @@ router.put('/:id', async(req, res) => {
       const { id } = req.params;
       const productFile = await productManager.getProductById (Number(id));
       if(productFile){
-          await productManager.updateProduct (product, Number(id));
+          await productManager.updateProduct (Number(id), product);
           res.send(`Producto Actualizado!`);
       } else {
           res.status(404).send('Producto No Encontrado')
